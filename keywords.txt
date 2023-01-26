@@ -1,0 +1,39 @@
+#######################################
+# Syntax Coloring Map For the DACs (TDC720X)
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+TDC720X	KEYWORD1
+TDC7200	KEYWORD1
+TDC7201	KEYWORD1
+TDC	KEYWORD1
+TDC1	KEYWORD1
+TDC2	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+read	KEYWORD2
+write	KEYWORD2
+stops	KEYWORD2
+enable	KEYWORD2
+disable	KEYWORD2
+calculate_lsb	KEYWORD2
+avg_cycles	KEYWORD2
+stop_mask	KEYWORD2
+overflow	KEYWORD2
+start_measurement	KEYWORD2
+read_measurement	KEYWORD2
+attach_interrupt	KEYWORD2
+measurement_mode	KEYWORD2
+calibration_period	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
