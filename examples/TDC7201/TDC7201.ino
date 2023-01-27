@@ -46,7 +46,9 @@ void setup()
 {
     Serial.begin(115200);
     Serial.println("\nTDC720X Time-to-Digital Converter (TDC) Dual Core example\n");
-
+    
+    SPI.begin();
+    
     // Note: Enable pins are the same for both TDC cores. Also note that DOUTs for both cores are assumed shorted electrically
     if (!TDC1.begin(EXAMPLE_SPI_CS_PIN1, EXAMPLE_ENABLE_PIN)) {
         Serial.println(F("\nError: TDC1 Initialization failed. Please set at least the CS pin\n"));
