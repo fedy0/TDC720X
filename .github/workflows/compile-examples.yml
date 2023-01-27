@@ -35,9 +35,11 @@ jobs:
 
       matrix:
         board:
+          - fqbn: "arduino:avr:pro"
+            type: pro
           - fqbn: "esp32:esp32:esp32"
             type: esp32
-
+            
         include:
           - board:
               type: esp32
