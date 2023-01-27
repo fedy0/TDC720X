@@ -1,4 +1,4 @@
-/* This example show how to use the TDC720X Time-to-Digital Converter (TDC) Series (TDC7200 & TDC7201)
+/* This example show how to use the TDC720X Time-to-Digital Converter (TDC) Dual core TDC7201
    from Texax Instruments Inc. to measure variable time between events on its START and STOP pins.
 
    Created by Elochukwu Ifediora on Jan. 25, 2023
