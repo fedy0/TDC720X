@@ -61,7 +61,9 @@ void setup()
 {
     Serial.begin(115200);
     Serial.println("\nTDC720X Time-to-Digital Converter (TDC) example\n");
-
+    
+    SPI.begin();
+    
     if (!TDC.begin(EXAMPLE_SPI_CS_PIN, EXAMPLE_ENABLE_PIN)) {
         Serial.println(F("\nError: TDC Initialization failed. Please set at least the CS pin\n"));
         while(1)
