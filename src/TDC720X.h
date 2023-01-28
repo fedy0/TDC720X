@@ -71,7 +71,7 @@
 // Timing/Frequency
 #define TDC720X_ENABLE_LOW_MS                  5
 #define TDC720X_ENABLE_T3_LDO_SET3_MS          2
-#define TDC720X_DEFAULT_EXTERNAL_OSC_FREQ_HZ   16000000U
+#define TDC720X_DEFAULT_EXTERNAL_OSC_FREQ_HZ   8000000U
 #define TDC720X_INTERNAL_RING_OSC_FREQ_HZ      144000000U
 #define PS_PER_SEC                             1000000000000UL // (1E12) 
 #define US_PER_SEC                             1000000U        // (1E6)
