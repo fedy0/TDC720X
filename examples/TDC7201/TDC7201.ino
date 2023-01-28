@@ -39,6 +39,8 @@
 
 #include "TDC720X.h"
 
+#define EXAMPLE_EXTERNAL_OSC_FREQ_HZ 8000000U
+
 #ifdef ESP32
 
 #include <stdio.h>
@@ -60,11 +62,11 @@
 // Generate an External Clock (Emulate crystal osc.) for the TDC with LEDC Peripheral
 #define LEDC_TIMER                 LEDC_TIMER_0
 #define LEDC_MODE                  LEDC_HIGH_SPEED_MODE
-#define LEDC_OUTPUT_IO             (25)                 // Define the output GPIO
+#define LEDC_OUTPUT_IO             (25)                                // Define the output GPIO
 #define LEDC_CHANNEL               LEDC_CHANNEL_0
-#define LEDC_DUTY_RES              LEDC_TIMER_5_BIT     // Set duty resolution to 5 bits
-#define LEDC_DUTY                  (16)                 // Set duty to 50%. ((2 ** 5) - 1) * 50% = 32
-#define LEDC_FREQUENCY             (8000000U)           // Frequency in Hertz. Set frequency at 8 MHz
+#define LEDC_DUTY_RES              LEDC_TIMER_5_BIT                    // Set duty resolution to 5 bits
+#define LEDC_DUTY                  (16)                                // Set duty to 50%. ((2 ** 5) - 1) * 50% = 32
+#define LEDC_FREQUENCY             (EXAMPLE_EXTERNAL_OSC_FREQ_HZ)      // Frequency in Hertz. Set frequency at 8 MHz
 
 static void example_ledc_init(void);
 
@@ -86,8 +88,8 @@ static void example_ledc_init(void);
 
 #define NUMBER_OF_STOPS            4           // Note: STOP_5 which is equal to '4' is the maximum number of stops that can be measured by the TDC ASIC
 
-TDC720X TDC1(TDC7201, EXTERNAL_OSC_FREQ_HZ);   // Note: External clock are the same for both TDC cores. 
-TDC720X TDC2(TDC7201, EXTERNAL_OSC_FREQ_HZ);
+TDC720X TDC1(TDC7201, EXAMPLE_EXTERNAL_OSC_FREQ_HZ);   // Note: External clock are the same for both TDC cores. 
+TDC720X TDC2(TDC7201, EXAMPLE_EXTERNAL_OSC_FREQ_HZ);
 
 void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stops);
 
@@ -213,6 +215,7 @@ void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stop
     interrupts();
 }
 
+#ifdef ESP32
 // ESP32 Emulating 8MHz External Clock Source
 static void example_ledc_init(void)
 {
@@ -238,3 +241,4 @@ static void example_ledc_init(void)
     };
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
+#endif

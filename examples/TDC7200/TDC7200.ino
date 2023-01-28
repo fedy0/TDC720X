@@ -166,6 +166,7 @@ void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stop
     interrupts();
 }
 
+#ifdef ESP32
 // ESP32 Emulating 8MHz External Clock Source
 static void example_ledc_init(void)
 {
@@ -191,3 +192,4 @@ static void example_ledc_init(void)
     };
     ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
 }
+#endif
