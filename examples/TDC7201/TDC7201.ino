@@ -170,7 +170,7 @@ void loop()
     // Generate 5 pulses
     generate_pulse(time_between_pulses_in_us, NUMBER_OF_STOPS);
 
-    // Crudely wait for TDC interrupt to indicate overflow or new measurment available
+    // Crudely wait for TDC interrupt to indicate overflow or new measurement available
     while (digitalRead(EXAMPLE_INTERRUPT_PIN1) == HIGH);
     while (digitalRead(EXAMPLE_INTERRUPT_PIN2) == HIGH);
 

@@ -351,9 +351,9 @@ void TDC720X::start_measurement(void) {
 // Read measurement result between START and multiple STOPS (max = 5 STOPs).
 // Success: The method returns "true" with the time-of-flight in "tof"
 // Fail: The method returns "false" with the failure description in "tof" as -1, 0, 1, and 2 corresponding to
-// "Reading STOPs beyond configuration", "No New Measurement", "Coarse Counter Overflow", and "Clock Counter Overflow" respectivly
+// "Reading STOPs beyond configuration", "No New Measurement", "Coarse Counter Overflow", and "Clock Counter Overflow" respectively
 bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
-    // TODO: Service the type of interrupt that occured (Imeplementations below are temporary)
+    // TODO: Service the type of interrupt that occurred (Imeplementations below are temporary)
     if (read(CLOCK_CNTR_OVF_INT, INT_STATUS)) {
         tof = CLOCK_CNTR_OVF_INT;                        // Error: Clock Counter Overflow occurred
         set((uint8_t) CLOCK_CNTR_OVF_INT, INT_STATUS);   // Clear the interrupt: Writing a '1' clears the interrupt according to the datasheet. The same applies for other interrupt statuses below
