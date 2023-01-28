@@ -22,5 +22,5 @@ jobs:
       # See: https://github.com/codespell-project/actions-codespell/blob/master/README.md
       - name: Spell check
         uses: codespell-project/actions-codespell@v1
-        with:
-          ignore_words_list: DOUT
+	with:
+	  ignore_words_list: DOUT, DIN
