@@ -1,35 +1,41 @@
 /* This example show how to use the TDC720X Time-to-Digital Converter (TDC) Series (TDC7200 & TDC7201)
    from Texax Instruments Inc. to measure variable time between events on its START and STOP pins.
-
-   Created by Elochukwu Ifediora on Jan. 25, 2023
    _________________________________________________
    |                   Connections                  |
    |________________________________________________|
    |   TDC7200     | ARDUINO PRO MINI |    ESP32    |
-   |   1 Enable    |        4         |     26      |
-   |   2 Trigg     |        -         |     -       |
-   |   3 Start     |        3         |     17      |
-   |   4 Stop      |        5         |     16      |
-   |   5 Clock     |        8         |     25      |
-   |   6 NC        |        -         |     -       |
-   |   7 GND       |       GND        |    GND      |
-   |   8 Intb      |        2         |     4       |
-   |   9 Dout      |       12         |     23      |
-   |  10 Din       |       11         |     19      |
-   |  11 Csb       |       10         |     5       |
-   |  12 Sclk      |       13         |     18      |
-   |  13 Vreg      |        -         | 1uF to GND  |
-   |  14 VDD       |     VCC 3.3V     |  VCC 3.3V   |
+   |   ENABLE      |        4         |     26      |
+   |   TRIGG       |        -         |     -       |
+   |   START       |        3         |     17      |
+   |   STOP        |        5         |     16      |
+   |   CLOCK       |        8         |     25      |
+   |   NC          |        -         |     -       |
+   |   GND         |       GND        |    GND      |
+   |   INTB        |        2         |     4       |
+   |   DOUT        |       12         |     23      |
+   |   CSB         |       10         |     5       |
+   |   SCLK        |       13         |     18      |
+   |   DIN         |       11         |     19      |
+   |   VREG        |    1uF to GND    | 1uF to GND  |
+   |   VDD         |     VCC 3.3V     |  VCC 3.3V   |
    |_______________|__________________|_____________|
    
    8MHz EXTERNAL CLOCK EMULATION:
    ARDUINO PRO MINI: 8MHz clock output is configured in Pro Mini Fuse settings.
    ESP32: LEDC Peripheral is used for an 8MHz external clock source on GPIO 25.
+   
+   Note: The example was tested on ESP32 using arduino-esp32 core version 2.0.5
+   
+   Created by Elochukwu Ifediora on Jan. 25, 2023
 */
 
 #include "TDC720X.h"
 
 #ifdef ESP32
+
+#include <stdio.h>
+#include "driver/ledc.h"
+#include "esp_err.h"
 
 #define EXAMPLE_SPI_CS_PIN         5
 #define EXAMPLE_INTERRUPT_PIN      4
@@ -37,15 +43,15 @@
 #define EXAMPLE_START_PIN          17
 #define EXAMPLE_STOP_PIN           16
 
-// Generate Clock with LEDC Peripheral 
+// Generate an External Clock (Emulate crystal osc.) for the TDC with LEDC Peripheral
 #define LEDC_TIMER                 LEDC_TIMER_0
-#define LEDC_MODE                  LEDC_LOW_SPEED_MODE
+#define LEDC_MODE                  LEDC_HIGH_SPEED_MODE
 #define LEDC_OUTPUT_IO             (25)                 // Define the output GPIO
 #define LEDC_CHANNEL               LEDC_CHANNEL_0
 #define LEDC_DUTY_RES              LEDC_TIMER_5_BIT     // Set duty resolution to 5 bits
-#define LEDC_DUTY                  (16)                 // Set duty to 50%. (2 ** (5 - 1)) * 50% = 32
+#define LEDC_DUTY                  (16)                 // Set duty to 50%. ((2 ** 5) - 1) * 50% = 32
 #define LEDC_FREQUENCY             (8000000U)           // Frequency in Hertz. Set frequency at 8 MHz
-s
+
 static void example_ledc_init(void);
 
 #else  // ARDUINO PRO MINIs
@@ -53,8 +59,8 @@ static void example_ledc_init(void);
 #define EXAMPLE_SPI_CS_PIN         10
 #define EXAMPLE_INTERRUPT_PIN      2
 #define EXAMPLE_ENABLE_PIN         4
-#define EXAMPLE_START_PIN          5
-#define EXAMPLE_STOP_PIN           6
+#define EXAMPLE_START_PIN          3
+#define EXAMPLE_STOP_PIN           5
 
 #endif
 
@@ -64,7 +70,7 @@ TDC720X TDC;                                   // Default: This is the same as T
 
 volatile uint8_t interrupt_flag = 0;
 void isr (void);
-void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stops);s
+void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stops);
 
 void setup()
 {
@@ -160,14 +166,14 @@ void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stop
     interrupts();
 }
 
-// ESP32 8MHz External Clock Source
+// ESP32 Emulating 8MHz External Clock Source
 static void example_ledc_init(void)
 {
     // Prepare and then apply the LEDC PWM timer configuration
     ledc_timer_config_t ledc_timer = {
         .speed_mode       = LEDC_MODE,
-        .timer_num        = LEDC_TIMER,
         .duty_resolution  = LEDC_DUTY_RES,
+        .timer_num        = LEDC_TIMER,
         .freq_hz          = LEDC_FREQUENCY,  // Set output frequency at 5 kHz
         .clk_cfg          = LEDC_AUTO_CLK
     };
@@ -175,11 +181,11 @@ static void example_ledc_init(void)
 
     // Prepare and then apply the LEDC PWM channel configuration
     ledc_channel_config_t ledc_channel = {
+        .gpio_num       = LEDC_OUTPUT_IO,
         .speed_mode     = LEDC_MODE,
         .channel        = LEDC_CHANNEL,
-        .timer_sel      = LEDC_TIMER,
         .intr_type      = LEDC_INTR_DISABLE,
-        .gpio_num       = LEDC_OUTPUT_IO,
+        .timer_sel      = LEDC_TIMER,
         .duty           = 50, // Set duty to 50%
         .hpoint         = 0
     };
