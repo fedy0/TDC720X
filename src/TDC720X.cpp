@@ -97,6 +97,8 @@ bool TDC720X::begin(int8_t _cs, int8_t _en) {
 
     if (_en >= 0) {
         en = _en;
+        pinMode(en, OUTPUT);
+        digitalWrite(en, LOW);
         enable();
     }
     
