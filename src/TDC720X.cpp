@@ -116,7 +116,7 @@ bool TDC720X::begin(int8_t _cs, int8_t _en) {
     read(INT_MASK);
     if (reg_data != tdc[INT_MASK].data)
         return false;
-    
+ 
     disable_auto_increment();
     calibration_period(CALIBRATION2_PERIODS_10);
     stops(STOP_1);
@@ -164,7 +164,7 @@ void TDC720X::tdc_interrupt_handler(void) {
 }
 
 // Write the value "reg_data" into the location ( both mirriored and actual memory layout of the TDC ASIC) specified by the index
-bool TDC720X::write(tdc_reg_index_t reg_index, uint32_t reg_data) {
+bool TDC720X::write(const tdc_reg_index_t reg_index, const uint32_t reg_data) {
     if (reg_index >= TIME1) {
         // The registers from TIME1 to CALIBRATION2 are read-only registers
         return false;
@@ -191,6 +191,7 @@ bool TDC720X::write(tdc_reg_index_t reg_index, uint32_t reg_data) {
     #ifdef VERIFY_SPI_TRANSACTION
     spi->beginTransaction(settings);
     digitalWrite(cs, LOW);
+    address.bits.rw = TDC720X_REG_SPI_READ;
     spi->transfer(address.address);
     uint32_t reg_data2 = spi->transfer(0);
     digitalWrite(cs, HIGH);
@@ -203,7 +204,7 @@ bool TDC720X::write(tdc_reg_index_t reg_index, uint32_t reg_data) {
 }
 
 // Copy the value in the actual TDC ASIC memory specified by the index to the mirriored memory layout of the TDC ASIC
-bool TDC720X::read(tdc_reg_index_t reg_index) {
+bool TDC720X::read(const tdc_reg_index_t reg_index) {
     uint32_t reg_data;
     address.bits.raddr = tdc[reg_index].addr;
     address.bits.rw = TDC720X_REG_SPI_READ;
@@ -334,9 +335,9 @@ void TDC720X::start_measurement(void) {
 
     // If interrupt pin was enabled, clear the interrupt statuses
     // if (interrupt_pin >= 0) {
-    //     set((uint8_t) EW_MEAS_MASK, INT_STATUS);
-    //     set((uint8_t) COARSE_CNTR_OVF_MASK, INT_STATUS);
-    //     set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_STATUS);
+    //     set((uint8_t) EW_MEAS_MASK, INT_MASK);
+    //     set((uint8_t) COARSE_CNTR_OVF_MASK, INT_MASK);
+    //     set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_MASK);
     //     write(INT_MASK, tdc[INT_MASK].data);
     // }
     

@@ -52,7 +52,7 @@
 // Comment the code line below to prevent the host MCU from reading the 8-bit registers twice for every read or write to verify the correctness of the SPI transaction
 // For the 24-bit registers, you can enable parity check as in enable_parity(YES);
 // Pros: Data reliability
-// Cons: Slow access speed
+// Cons: Relatively slow access speed
 #define VERIFY_SPI_TRANSACTION
 
 // TDC720X Interface Definition
@@ -273,6 +273,7 @@ namespace TDC72XX {
 
       bool write(tdc_reg_index_t reg_index, uint32_t reg_data);
       bool read(tdc_reg_index_t reg_index);
+      inline uint32_t data(tdc_reg_index_t reg_index) { read(reg_index); return tdc[reg_index].data; };
 
       // Reads the value of the interrupt bits in a given register
       bool read(intr_t bit_position, tdc_reg_index_t reg_index) { read(reg_index); return ((tdc[reg_index].data >> bit_position) & 1) ? true : false; };
