@@ -101,6 +101,9 @@ bool TDC720X::begin(int8_t _cs, int8_t _en) {
         digitalWrite(en, LOW);
         enable();
     }
+    else {
+        delay(TDC720X_ENABLE_T3_LDO_SET3_MS);
+    }
     
     // Read default registers to be sure that the TDC ASIC is enabled or not faulty
     uint32_t reg_data;
