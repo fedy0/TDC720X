@@ -271,9 +271,9 @@ namespace TDC72XX {
       inline void enable_auto_increment(void) { address.bits.incr = TDC720X_REG_SPI_AUTOINC; };
       inline void disable_auto_increment(void) { address.bits.incr = 0; };
 
-      bool write(tdc_reg_index_t reg_index, uint32_t reg_data);
-      bool read(tdc_reg_index_t reg_index);
-      inline uint32_t data(tdc_reg_index_t reg_index) { read(reg_index); return tdc[reg_index].data; };
+      bool write(const tdc_reg_index_t reg_index, const uint32_t reg_data);
+      bool read(const tdc_reg_index_t reg_index);
+      inline uint32_t data(const tdc_reg_index_t reg_index) { read(reg_index); return tdc[reg_index].data; };
 
       // Reads the value of the interrupt bits in a given register
       bool read(intr_t bit_position, tdc_reg_index_t reg_index) { read(reg_index); return ((tdc[reg_index].data >> bit_position) & 1) ? true : false; };
