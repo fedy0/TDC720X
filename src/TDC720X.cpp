@@ -284,7 +284,7 @@ void TDC720X::overflow(const uint64_t overflow_in_ps) {
 // For increased accuracy, this method should be ran/called often (say, per minute)
 // to update the normLSB as variations in the environment introduces real-time errors
 void TDC720X::calculate_lsb(void) {
-    uint8_t default_period = ((tdc[CONFIG2].data & (~TDC720X_BITS_MASK_CALIBRATION2_PERIODS)) >> 6); 
+    uint8_t default_period = (tdc[CONFIG2].data & (~TDC720X_BITS_MASK_CALIBRATION2_PERIODS)); 
     switch (default_period) {
         case CALIBRATION2_PERIODS_2:
             default_period = 2;
@@ -301,7 +301,7 @@ void TDC720X::calculate_lsb(void) {
             calibration_period(CALIBRATION2_PERIODS_10);
         break;
     }
-    bool default_force_calibration = read(FORCE_CAL, CONFIG1);
+    bool default_force_calibration = read((uint8_t) FORCE_CAL, CONFIG1);
     force_calibration(YES);
     start_measurement();
 
@@ -311,7 +311,6 @@ void TDC720X::calculate_lsb(void) {
     // delay = 8.192ms (which is the biggest overflow, bigger than mode 1) + 1/1MHz (the slowest clock) x 40 calibration cycle = 8.232ms
     delay(10);
     force_calibration((tdc_config_t)default_force_calibration); // Reset this settings to avoid messing with the user settings
-    write(CONFIG1, tdc[CONFIG1].data);
 
     read(CALIBRATION1);
     read(CALIBRATION2);
@@ -330,22 +329,15 @@ void TDC720X::start_measurement(void) {
     // set((uint8_t) CLOCK_CNTR_OVF_INT, INT_STATUS);
     // set((uint8_t) MEAS_STARTED_FLAG, INT_STATUS);
     // set((uint8_t) MEAS_COMPLETE_FLAG, INT_STATUS);
-    // write(INT_STATUS, tdc[INT_STATUS].data);
     tdc[INT_STATUS].data = 0;
-
-    // If interrupt pin was enabled, clear the interrupt statuses
-    // if (interrupt_pin >= 0) {
-    //     set((uint8_t) EW_MEAS_MASK, INT_MASK);
-    //     set((uint8_t) COARSE_CNTR_OVF_MASK, INT_MASK);
-    //     set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_MASK);
-    //     write(INT_MASK, tdc[INT_MASK].data);
-    // }
+    write(INT_STATUS, tdc[INT_STATUS].data);
     
     // If interrupt pins was enabled, clear the interrupt statuses
     if (interrupt_pin >= 0) {
-        set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_MASK);
-        set((uint8_t) COARSE_CNTR_OVF_MASK, INT_MASK);
-        set((uint8_t) NEW_MEAS_MASK, INT_MASK);
+        //set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_MASK);
+        //set((uint8_t) COARSE_CNTR_OVF_MASK, INT_MASK);
+        //set((uint8_t) NEW_MEAS_MASK, INT_MASK);
+        tdc[INT_MASK].data = 0;
         write(INT_MASK, tdc[INT_MASK].data);
     }
     

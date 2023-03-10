@@ -283,12 +283,12 @@ namespace TDC72XX {
       inline void set (uint8_t bit_position, tdc_reg_index_t reg_index)   { tdc[reg_index].data |= (1 << bit_position);  };
       inline void clear (uint8_t bit_position, tdc_reg_index_t reg_index) { tdc[reg_index].data &= ~(1 << bit_position); };
       
-      inline void force_calibration(tdc_config_t config) { if (config) set(FORCE_CAL,  CONFIG1); else clear(FORCE_CAL,  CONFIG1); };
-      inline void enable_parity(tdc_config_t config)     { if (config) set(PARITY_EN,  CONFIG1); else clear(PARITY_EN,  CONFIG1); write(CONFIG2, tdc[CONFIG2].data); };
-      inline void trigger_edge(tdc_config_t config)      { if (config) set(TRIGG_EDGE, CONFIG1); else clear(TRIGG_EDGE, CONFIG1); };
-      inline void stop_edge(tdc_config_t config)         { if (config) set(STOP_EDGE,  CONFIG1); else clear(STOP_EDGE,  CONFIG1); };
-      inline void start_edge(tdc_config_t config)        { if (config) set(START_EDGE, CONFIG1); else clear(START_EDGE, CONFIG1); };
-      inline void measurement_mode(tdc_config_t config)  { clear(2, CONFIG1); if (config) set(MEAS_MODE, CONFIG1); else clear(MEAS_MODE, CONFIG1); };
+      inline void force_calibration(tdc_config_t config) { if (config) set(FORCE_CAL,  CONFIG1); else clear(FORCE_CAL,  CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
+      inline void enable_parity(tdc_config_t config)     { if (config) set(PARITY_EN,  CONFIG1); else clear(PARITY_EN,  CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
+      inline void trigger_edge(tdc_config_t config)      { if (config) set(TRIGG_EDGE, CONFIG1); else clear(TRIGG_EDGE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
+      inline void stop_edge(tdc_config_t config)         { if (config) set(STOP_EDGE,  CONFIG1); else clear(STOP_EDGE,  CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
+      inline void start_edge(tdc_config_t config)        { if (config) set(START_EDGE, CONFIG1); else clear(START_EDGE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
+      inline void measurement_mode(tdc_config_t config)  { clear(2, CONFIG1); if (config) set(MEAS_MODE, CONFIG1); else clear(MEAS_MODE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
       void start_measurement(void);
 
       inline void calibration_period(const tdc_calibration_periods_t config) { tdc[CONFIG2].data &= TDC720X_BITS_MASK_CALIBRATION2_PERIODS; tdc[CONFIG2].data |= config; write(CONFIG2, tdc[CONFIG2].data); };
