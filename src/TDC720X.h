@@ -53,7 +53,7 @@
 // For the 24-bit registers, you can enable parity check as in enable_parity(YES);
 // Pros: Data reliability
 // Cons: Relatively slow access speed
-#define VERIFY_SPI_TRANSACTION
+//#define VERIFY_SPI_TRANSACTION
 
 // TDC720X Interface Definition
 #define TDC720X_DEFAULT_SPI                    SPI
@@ -165,7 +165,7 @@ namespace TDC72XX {
     // For CONFIG1 Possible Values
     NO            = 0,
     YES,
-    RISING_EGDE   = 0,
+    RISING_EDGE   = 0,
     FALLING_EDGE,
     MODE_1        = 0,
     MODE_2
@@ -288,7 +288,7 @@ namespace TDC72XX {
       inline void trigger_edge(tdc_config_t config)      { if (config) set(TRIGG_EDGE, CONFIG1); else clear(TRIGG_EDGE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
       inline void stop_edge(tdc_config_t config)         { if (config) set(STOP_EDGE,  CONFIG1); else clear(STOP_EDGE,  CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
       inline void start_edge(tdc_config_t config)        { if (config) set(START_EDGE, CONFIG1); else clear(START_EDGE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
-      inline void measurement_mode(tdc_config_t config)  { clear(2, CONFIG1); if (config) set(MEAS_MODE, CONFIG1); else clear(MEAS_MODE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
+      inline void measurement_mode(tdc_config_t config)  { clear(2, CONFIG1); if (config == MODE_2) set(MEAS_MODE, CONFIG1); else clear(MEAS_MODE, CONFIG1); write(CONFIG1, tdc[CONFIG1].data); };
       void start_measurement(void);
 
       inline void calibration_period(const tdc_calibration_periods_t config) { tdc[CONFIG2].data &= TDC720X_BITS_MASK_CALIBRATION2_PERIODS; tdc[CONFIG2].data |= config; write(CONFIG2, tdc[CONFIG2].data); };
@@ -297,7 +297,7 @@ namespace TDC72XX {
 
       void stop_mask(const uint64_t stop_mask_in_ps);
       void overflow(const uint64_t overflow_in_ps);
-      void calculate_lsb();
+      bool calculate_lsb();
       bool read_measurement(const tdc_stops_t stop, float& tof);
       
       inline void end (void) { disable(); };

@@ -104,7 +104,8 @@ bool TDC720X::begin(int8_t _cs, int8_t _en) {
     else {
         delay(TDC720X_ENABLE_T3_LDO_SET3_MS);
     }
-    
+    Serial.print("\nCONFIG2: 0x"); Serial.println(data(CONFIG2), HEX);
+    Serial.print("INT_MASK: 0x"); Serial.println(data(INT_MASK), HEX);
     // Read default registers to be sure that the TDC ASIC is enabled or not faulty
     uint32_t reg_data;
     reg_data = tdc[CONFIG2].data;
@@ -116,11 +117,21 @@ bool TDC720X::begin(int8_t _cs, int8_t _en) {
     read(INT_MASK);
     if (reg_data != tdc[INT_MASK].data)
         return false;
- 
+ Serial.print("\nCONFIG2: 0x"); Serial.println(data(CONFIG2), HEX);
+    Serial.print("INT_MASK: 0x"); Serial.println(data(INT_MASK)), HEX;
     disable_auto_increment();
     calibration_period(CALIBRATION2_PERIODS_10);
     stops(STOP_1);
     calculate_lsb();
+    
+    // If interrupt pins was enabled, enable the interrupt masks to trigger the interrupt pin
+    if (interrupt_pin >= 0) {
+        tdc[INT_MASK].data = 0;
+        set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_MASK);
+        set((uint8_t) COARSE_CNTR_OVF_MASK, INT_MASK);
+        set((uint8_t) NEW_MEAS_MASK, INT_MASK);
+        write(INT_MASK, tdc[INT_MASK].data);
+    }
 
     return true;
 }
@@ -231,10 +242,11 @@ bool TDC720X::read(const tdc_reg_index_t reg_index) {
             if (sum % 2 == 1)
                 return false;
         }
-        clear(TDC720X_PARITY_BIT_POSITION, CONFIG1);
+        tdc[reg_index].data = reg_data;
+        clear(TDC720X_PARITY_BIT_POSITION, reg_index);
     }
-    #ifdef VERIFY_SPI_TRANSACTION
     else {
+    #ifdef VERIFY_SPI_TRANSACTION
         spi->beginTransaction(settings);
         digitalWrite(cs, LOW);
         spi->transfer(address.address);
@@ -243,10 +255,10 @@ bool TDC720X::read(const tdc_reg_index_t reg_index) {
         spi->endTransaction();
         if (reg_data != reg_data2)
             return false;
-    }
     #endif
+        tdc[reg_index].data = reg_data;
+    }
 
-    tdc[reg_index].data = reg_data;
     return true;
 }
 
@@ -283,7 +295,12 @@ void TDC720X::overflow(const uint64_t overflow_in_ps) {
 // Force the calculation of the normalized LSB value.
 // For increased accuracy, this method should be ran/called often (say, per minute)
 // to update the normLSB as variations in the environment introduces real-time errors
-void TDC720X::calculate_lsb(void) {
+bool TDC720X::calculate_lsb(void) {
+    // If forced calibration was not enabled return false
+    if (!read((uint8_t) FORCE_CAL, CONFIG1)) {
+      return false;
+    }
+    
     uint8_t default_period = (tdc[CONFIG2].data & (~TDC720X_BITS_MASK_CALIBRATION2_PERIODS)); 
     switch (default_period) {
         case CALIBRATION2_PERIODS_2:
@@ -301,23 +318,25 @@ void TDC720X::calculate_lsb(void) {
             calibration_period(CALIBRATION2_PERIODS_10);
         break;
     }
-    bool default_force_calibration = read((uint8_t) FORCE_CAL, CONFIG1);
-    force_calibration(YES);
-    start_measurement();
-
-    // Delay to ensure overflow occurs to force the TDC ASIC to re-calibrate
-    // The optimized delay value was obtained from the following equation:
-    // delay = max. overflow for mode 2 + (max external clock period x max calibration period)
-    // delay = 8.192ms (which is the biggest overflow, bigger than mode 1) + 1/1MHz (the slowest clock) x 40 calibration cycle = 8.232ms
-    delay(10);
-    force_calibration((tdc_config_t)default_force_calibration); // Reset this settings to avoid messing with the user settings
-
-    read(CALIBRATION1);
-    read(CALIBRATION2);
-
+    
+    if (!read(CALIBRATION1)) {
+      return false;
+    }
+    if (!read(CALIBRATION2)) {
+      return false;
+    }
+    
+    Serial.print("\nCALIBRATION1: "); Serial.println(data(CALIBRATION1));
+    Serial.print("CALIBRATION2: "); Serial.println(data(CALIBRATION2));
+    
+    if (tdc[CALIBRATION2].data < tdc[CALIBRATION1].data) {
+      return false;
+    }
+    
     float calibration_count = (tdc[CALIBRATION2].data - tdc[CALIBRATION1].data) / (default_period - 1);
 
     lsb = (float)(clock_period_in_ps / PS_PER_SEC) / calibration_count;
+    return true;
 }
 
 // Start the event measurement
@@ -329,37 +348,32 @@ void TDC720X::start_measurement(void) {
     // set((uint8_t) CLOCK_CNTR_OVF_INT, INT_STATUS);
     // set((uint8_t) MEAS_STARTED_FLAG, INT_STATUS);
     // set((uint8_t) MEAS_COMPLETE_FLAG, INT_STATUS);
-    tdc[INT_STATUS].data = 0;
-    write(INT_STATUS, tdc[INT_STATUS].data);
-    
-    // If interrupt pins was enabled, clear the interrupt statuses
-    if (interrupt_pin >= 0) {
-        //set((uint8_t) CLOCK_CNTR_OVF_MASK, INT_MASK);
-        //set((uint8_t) COARSE_CNTR_OVF_MASK, INT_MASK);
-        //set((uint8_t) NEW_MEAS_MASK, INT_MASK);
-        tdc[INT_MASK].data = 0;
-        write(INT_MASK, tdc[INT_MASK].data);
-    }
+    // OR
+    //tdc[INT_STATUS].data = 0;
+    //write(INT_STATUS, tdc[INT_STATUS].data);
     
     // Start measurement
-    set(START_MEAS, CONFIG1);
+    set(START_MEAS, CONFIG1);          // NOTE: According to the datasheet, writing a 1 HERE will clear the interrupt statuses
     write(CONFIG1, tdc[CONFIG1].data);
 }
 
 // Read measurement result between START and multiple STOPS (max = 5 STOPs).
 // Success: The method returns "true" with the time-of-flight in "tof"
-// Fail: The method returns "false" with the failure description in "tof" as -1, 0, 1, and 2 corresponding to
-// "Reading STOPs beyond configuration", "No New Measurement", "Coarse Counter Overflow", and "Clock Counter Overflow" respectively
+// Fail: The method returns "false" with the failure description in "tof" as -1, 0, 1, 2 and 3 corresponding to
+// "Reading STOPs beyond configuration", "No New Measurement", "Coarse Counter Overflow", "Clock Counter Overflow", and "LSB calculation error" respectively
 bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
     // TODO: Service the type of interrupt that occurred (Imeplementations below are temporary)
-    if (read(CLOCK_CNTR_OVF_INT, INT_STATUS)) {
+    // TODO: Add a proper typedef error handling
+    if (read((intr_t) CLOCK_CNTR_OVF_INT, INT_STATUS)) {
         tof = CLOCK_CNTR_OVF_INT;                        // Error: Clock Counter Overflow occurred
         set((uint8_t) CLOCK_CNTR_OVF_INT, INT_STATUS);   // Clear the interrupt: Writing a '1' clears the interrupt according to the datasheet. The same applies for other interrupt statuses below
+        write(INT_STATUS, tdc[INT_STATUS].data);
         return false;
     }
-    if (read(COARSE_CNTR_OVF_INT, INT_STATUS)) {
+    if (read((intr_t) COARSE_CNTR_OVF_INT, INT_STATUS)) {
         tof = COARSE_CNTR_OVF_INT;                       // Error: Coarse Counter Overflow occurred
         set((uint8_t) COARSE_CNTR_OVF_INT, INT_STATUS);  // Clear the interrupt
+        write(INT_STATUS, tdc[INT_STATUS].data);
         return false;
     }
 
@@ -367,13 +381,20 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
     uint8_t index = tdc[CONFIG2].data & (~TDC720X_BITS_MASK_NUM_STOP);           // Now, "index" holds "number of configured stops 
     if (index <= stop) {
         // Check measurement interrupt status before reading measurements eg. Has measurement completed?
-        if (read(NEW_MEAS_INT, INT_STATUS) == false) {
+        if (read((intr_t) NEW_MEAS_INT, INT_STATUS) == false) {
             tof = NEW_MEAS_INT;                               // Error: No new measurement found
             set((uint8_t) COARSE_CNTR_OVF_INT, INT_STATUS);   // Clear the interrupt
             return false;
         }
+        
+        // Compute LSB if forced calibration was enabled
+        if (!calculate_lsb()) {
+          tof = 3;                                            // Error: LSB calculation error
+          return false;
+        }
+        
         // Check measurement mode, then compute measurement accordingly
-        if (read(MEAS_MODE, CONFIG1)) {
+        if (read((intr_t) MEAS_MODE, CONFIG1)) {
             // MODE 2   
             uint32_t time_n_plus_one;
             uint32_t clock_count_n;
@@ -388,11 +409,14 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
             read((tdc_reg_index_t)index);              // Read CLOCK_COUNTn
             clock_count_n = tdc[index].data;
 
-            index = ((tdc[CONFIG2].data & (~TDC720X_BITS_MASK_AVG_CYCLES)) >> 3); // Now, "index" holds "the average cycle configured for multi-avaraging mode
+            // To increase speed of computation take the content of the avg_cycle register (which is DIRECTLY equal to log(cycle)/log(2)) and shifting accordingly
+            // Now below, "index" holds "the average cycle configured for multi-avaraging mode already log'ed as in log(cycle)/log(2)
+            index = ((tdc[CONFIG2].data & (~TDC720X_BITS_MASK_AVG_CYCLES)) >> 3); 
             if (index > 0) {
                 // Multi-Cycle Averaging Mode
-                uint8_t shift = log(index)/log(2);
-                tof = (lsb * (tdc[TIME1].data - time_n_plus_one)) + ((clock_count_n >> shift) * (clock_period_in_ps / PS_PER_SEC));
+                //uint8_t shift = log(index)/log(2);
+                //tof = (lsb * (tdc[TIME1].data - time_n_plus_one)) + ((clock_count_n >> shift) * (clock_period_in_ps / PS_PER_SEC));
+                tof = (lsb * (tdc[TIME1].data - time_n_plus_one)) + ((clock_count_n >> index) * (clock_period_in_ps / PS_PER_SEC));
             }
             else {
                 // No Multi-Cycle Averaging Mode
