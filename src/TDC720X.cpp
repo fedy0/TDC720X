@@ -97,11 +97,12 @@ bool TDC720X::begin(int8_t _cs, int8_t _en) {
 
     if (_en >= 0) {
         en = _en;
-        pinMode(en, OUTPUT);
         digitalWrite(en, LOW);
+        pinMode(en, OUTPUT);
         enable();
     }
     else {
+        delay(TDC720X_ENABLE_LOW_MS);
         delay(TDC720X_ENABLE_T3_LDO_SET3_MS);
     }
     Serial.print("\nCONFIG2: 0x"); Serial.println(data(CONFIG2), HEX);
