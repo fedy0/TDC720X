@@ -12,6 +12,8 @@ TDC7201	KEYWORD1
 TDC	KEYWORD1
 TDC1	KEYWORD1
 TDC2	KEYWORD1
+TDCV	KEYWORD1
+TDCI	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
