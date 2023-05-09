@@ -53,7 +53,47 @@
 // For the 24-bit registers, you can enable parity check as in enable_parity(YES);
 // Pros: Data reliability
 // Cons: Relatively slow access speed
-//#define VERIFY_SPI_TRANSACTION
+#define VERIFY_SPI_TRANSACTION
+
+#ifdef BIT0
+#undef BIT0
+#define BIT0                               0B00000001
+#endif
+
+#ifdef BIT1
+#undef BIT1
+#define BIT1                               0B00000010
+#endif
+
+#ifdef BIT2
+#undef BIT2
+#define BIT2                               0B00000100
+#endif
+
+#ifdef BIT3
+#undef BIT3
+#define BIT3                               0B00001000
+#endif
+
+#ifdef BIT4
+#undef BIT4
+#define BIT4                               0B00010000
+#endif
+
+#ifdef BIT5
+#undef BIT5
+#define BIT5                               0B00100000
+#endif
+
+#ifdef BIT6
+#undef BIT6
+#define BIT6                               0B01000000
+#endif
+
+#ifdef BIT7
+#undef BIT7
+#define BIT7                               0B10000000
+#endif
 
 // TDC720X Interface Definition
 #define TDC720X_DEFAULT_SPI                    SPI
