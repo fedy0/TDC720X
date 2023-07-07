@@ -53,7 +53,7 @@
 // For the 24-bit registers, you can enable parity check as in enable_parity(YES);
 // Pros: Data reliability
 // Cons: Relatively slow access speed
-#define VERIFY_SPI_TRANSACTION
+//#define VERIFY_SPI_TRANSACTION
 
 #ifdef BIT0
 #undef BIT0
