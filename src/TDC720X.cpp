@@ -326,17 +326,19 @@ bool TDC720X::calculate_lsb(void) {
     if (!read(CALIBRATION2)) {
       return false;
     }
-    
+    /*
     Serial.print("\nCALIBRATION1: "); Serial.println(data(CALIBRATION1));
     Serial.print("CALIBRATION2: "); Serial.println(data(CALIBRATION2));
+    Serial.print("CALIBRATION2-CALIBRATION1: "); Serial.println(tdc[CALIBRATION2].data - tdc[CALIBRATION1].data);
     
     if (tdc[CALIBRATION2].data < tdc[CALIBRATION1].data) {
       return false;
     }
-    
+    */
     float calibration_count = (tdc[CALIBRATION2].data - tdc[CALIBRATION1].data) / (default_period - 1);
 
     lsb = (float)(clock_period_in_ps / PS_PER_SEC) / calibration_count;
+    Serial.print("lsb: "); Serial.println(lsb,10);
     return true;
 }
 
@@ -369,16 +371,18 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
     // Read the interrupt status register values into the buffer
     data(INT_STATUS);
     
-    if (read((uint8_t)BIT2, INT_STATUS)) { // CLOCK_CNTR_OVF_INT bit positon is BIT2
+    if (read(CLOCK_CNTR_OVF_INT, INT_STATUS)) { // CLOCK_CNTR_OVF_INT bit positon is BIT2
         tof = CLOCK_CNTR_OVF_INT;                        // Error: Clock Counter Overflow occurred
         set((uint8_t) CLOCK_CNTR_OVF_INT, INT_STATUS);   // Clear the interrupt: Writing a '1' clears the interrupt according to the datasheet. The same applies for other interrupt statuses below
         write(INT_STATUS, tdc[INT_STATUS].data);
+        Serial.println("\nCLOCK_CNTR_OVF_INT");
         return false;
     }
-    if (read((uint8_t)BIT1, INT_STATUS)) { // COARSE_CNTR_OVF_INT bit positon is BIT1
+    if (read(COARSE_CNTR_OVF_INT, INT_STATUS)) { // COARSE_CNTR_OVF_INT bit positon is BIT1
         tof = COARSE_CNTR_OVF_INT;                       // Error: Coarse Counter Overflow occurred
         set((uint8_t) COARSE_CNTR_OVF_INT, INT_STATUS);  // Clear the interrupt
         write(INT_STATUS, tdc[INT_STATUS].data);
+        Serial.println("\nCOARSE_CNTR_OVF_INT");
         return false;
     }
 
@@ -386,8 +390,9 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
     uint8_t index = tdc[CONFIG2].data & (~TDC720X_BITS_MASK_NUM_STOP);           // Now, "index" holds "number of configured stops 
     if (index <= stop) {
         // Check measurement interrupt status before reading measurements eg. Has measurement completed?
-        if (read((uint8_t)BIT0, INT_STATUS) == 0) {           // NEW_MEAS_INT bit positon is BIT0
+        if (read(NEW_MEAS_INT, INT_STATUS) == 0) {           // NEW_MEAS_INT bit positon is BIT0
             tof = NEW_MEAS_INT;                               // Error: No new measurement found
+            Serial.println("\nNO NEW_MEAS_INT");
             return false;
         }
         
@@ -400,8 +405,9 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
         
         // Check measurement mode, then compute measurement accordingly
         //if (read((intr_t) MEAS_MODE, CONFIG1)) {
-        if (read((uint8_t)BIT1, CONFIG1)) {
-            // MODE 2   
+        if (read(MEAS_MODE, CONFIG1)) {
+            // MODE 2
+            //Serial.println("\nMODE 2");
             uint32_t time_n_plus_one;
             uint32_t clock_count_n;
             
@@ -437,6 +443,7 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
         }
         else {
             // MODE 1
+            //Serial.println("\nMODE 1");
             uint8_t index = (uint8_t)TIME1 + (2 * (uint8_t)stop);
             read((tdc_reg_index_t)index);              // Read TIMEn
             tof = tdc[index].data * lsb;
@@ -444,6 +451,7 @@ bool TDC720X::read_measurement(const tdc_stops_t stop, float& tof) {
     }
     else {
         tof = -1;                                      // Error: You're trying to read beyond the maximum supported stops
+        Serial.println("too many stops");
         return false;
     }
     
