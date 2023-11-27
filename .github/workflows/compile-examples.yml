@@ -14,9 +14,9 @@ on:
       - "examples/**"
       - "src/**"
   # Scheduled trigger checks for breakage caused by changes to external resources (libraries, platforms)
-  schedule:
+  #schedule:
     # run every Saturday at 3 AM UTC
-    - cron: "0 3 * * 6"
+    #- cron: "0 3 * * 6"
   # See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#workflow_dispatch
   workflow_dispatch:
   # See: https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#repository_dispatch
