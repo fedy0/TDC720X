@@ -297,6 +297,7 @@ namespace TDC72XX {
         if (en >= 0) { \
         /* As recommended in the datasheet; a low-to-high transition */ \
           digitalWrite(en, LOW); \
+          pinMode(en, OUTPUT); \
           delay(TDC720X_ENABLE_LOW_MS); \
           digitalWrite(en, HIGH);
           delay(TDC720X_ENABLE_T3_LDO_SET3_MS); \
