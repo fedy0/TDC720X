@@ -6,9 +6,9 @@
    |   TDC7201     | ARDUINO PRO MINI |    ESP32    |
    |   ENABLE      |        4         |     26      |  <-- Shared by the 2 TDC cores
    |   SCLK        |       13         |     18      |  <-- Shared by the 2 TDC cores
-   |   DIN         |       11         |     19      |  <-- Shared by the 2 TDC cores
-   |   DOUT1       |       12         |     23      |  <-- Terminate with 22R and Short to DOUT1
-   |   DOUT2       |       12         |     23      |  <-- Terminate with 22R and Short to DOUT2
+   |   DIN         |       11         |     23      |  <-- Shared by the 2 TDC cores
+   |   DOUT1       |       12         |     19      |  <-- Terminate with 22R and Short to DOUT1
+   |   DOUT2       |       12         |     19      |  <-- Terminate with 22R and Short to DOUT2
    |   GND1        |       GND        |    GND      |
    |   GND2        |       GND        |    GND      |
    |   VDD1        |     VCC 3.3V     |  VCC 3.3V   |
