@@ -12,10 +12,10 @@
    |   NC          |        -         |     -       |
    |   GND         |       GND        |    GND      |
    |   INTB        |        2         |     4       |
-   |   DOUT        |       12         |     23      |
+   |   DOUT        |       12         |     19      |
    |   CSB         |       10         |     5       |
    |   SCLK        |       13         |     18      |
-   |   DIN         |       11         |     19      |
+   |   DIN         |       11         |     23      |
    |   VREG        |    1uF to GND    | 1uF to GND  |
    |   VDD         |     VCC 3.3V     |  VCC 3.3V   |
    |_______________|__________________|_____________|
