@@ -86,24 +86,22 @@ TDC720X::~TDC720X() {
 // Initialize necessary variables that the event measurement is dependent on
 bool TDC720X::begin(int8_t _cs, int8_t _en) {
 
-    if (_cs >= 0) {
-        cs = _cs;
-        pinMode(cs, OUTPUT);
-        digitalWrite(cs, HIGH);
-    }
-    else {
-        return false; // CS pin must be set; it is not optional
-    }
-
     if (_en >= 0) {
         en = _en;
-        digitalWrite(en, LOW);
-        pinMode(en, OUTPUT);
         enable();
     }
     else {
         delay(TDC720X_ENABLE_LOW_MS);
         delay(TDC720X_ENABLE_T3_LDO_SET3_MS);
+    }
+  
+    if (_cs >= 0) {
+        cs = _cs;
+        digitalWrite(cs, HIGH);
+        pinMode(cs, OUTPUT);
+    }
+    else {
+        return false; // CS pin must be set; it is not optional
     }
 
     // Read default registers to be sure that the TDC ASIC is enabled or not faulty
