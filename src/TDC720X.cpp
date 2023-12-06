@@ -41,7 +41,7 @@
 #include <TDC720X.h>
 
 TDC720X::TDC720X(tdc_t _tdc_type, uint32_t clock_frequency): \
-                settings(TDC720X_DEFAULT_SPI_FREQUENCY, TDC720X_DEFAULT_SPI_BITORDER, TDC720X_DEFAULT_SPI_DATAMODE), \
+                \//settings(TDC720X_DEFAULT_SPI_FREQUENCY, TDC720X_DEFAULT_SPI_BITORDER, TDC720X_DEFAULT_SPI_DATAMODE), \
                 spi(&TDC720X_DEFAULT_SPI), \
                 cs(-1), \
                 en(-1), \
