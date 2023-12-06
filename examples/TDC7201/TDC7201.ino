@@ -87,7 +87,7 @@ static void example_ledc_init(void);
 #endif
 
 #define NUMBER_OF_STOPS            4           // Note: STOP_5 which is equal to '4' is the maximum number of stops that can be measured by the TDC ASIC
-
+SPISettings settings(20000, MSBFIRST, SPI_MODE0);
 TDC720X TDC1(TDC7201, EXAMPLE_EXTERNAL_OSC_FREQ_HZ);   // Note: External clock are the same for both TDC cores. 
 TDC720X TDC2(TDC7201, EXAMPLE_EXTERNAL_OSC_FREQ_HZ);
 
@@ -99,6 +99,7 @@ void setup()
     Serial.println("\nTDC720X Time-to-Digital Converter (TDC) Dual Core example\n");
     
     SPI.begin();
+    TDC1.spi_settings(settings);
     
     // Note: Enable pins are the same for both TDC cores. Also note that DOUTs for both cores are assumed shorted electrically
     if (!TDC1.begin(EXAMPLE_SPI_CS_PIN1, EXAMPLE_ENABLE_PIN)) {
