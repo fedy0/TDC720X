@@ -68,6 +68,8 @@ static void example_ledc_init(void);
 
 TDC720X TDC;                                   // Default: This is the same as TDC720X TDC(TDC7200, TDC720X_DEFAULT_EXTERNAL_OSC_FREQ_HZ) and TDC720X_DEFAULT_EXTERNAL_OSC_FREQ_HZ = 8000000Hz
 
+SPISettings settings(20000, MSBFIRST, SPI_MODE0);
+
 volatile uint8_t interrupt_flag = 0;
 void isr (void);
 void generate_pulse(const uint32_t time_between_pulses_in_us, const uint8_t stops);
@@ -78,6 +80,7 @@ void setup()
     Serial.println("\nTDC720X Time-to-Digital Converter (TDC) example\n");
     
     SPI.begin();
+    TDC.spi_settings(settings);
     
     if (!TDC.begin(EXAMPLE_SPI_CS_PIN, EXAMPLE_ENABLE_PIN)) {
         Serial.println(F("\nError: TDC Initialization failed. Please set at least the CS pin\n"));
